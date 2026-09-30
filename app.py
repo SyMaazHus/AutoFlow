@@ -34,8 +34,57 @@ class GUI:
         )
         self.powerBtn.pack(fill="x", pady=(10, 5))
 
+        #status label under button
         self.lblStatus = ttk.Label(headerFrame, text="Status: Waiting for Graph API...", font=("Segeo UI", 9 ,"italic"))
         self.lblStatus.pack()
+
+        #Separator Line
+        ttk.Separator(self.root, orient="horizontal").pack(fill="x", padx=15, pady=5)
+
+        workflowFrame = ttk.Frame(self.root, padding=15)
+        workflowFrame.pack(fill="x")
+
+        ttk.Label(workflowFrame, text="Active Workflows", font=("Segoe UI",10,"bold")).pack(anchor="w", pady=(0,8))
+
+        self.fileSync = tk.BooleanVar(value=False)
+        self.chkFile = ttk.Checkbutton(
+            workflowFrame,
+            text="OneDrive Organiser",
+            variable=self.fileSync
+            #need command
+        )
+        self.chkFile.pack(anchor="w", pady=4)
+
+        self.noteSync = tk.BooleanVar(value=False)
+        self.chkNote = ttk.Checkbutton(
+            workflowFrame,
+            text = "OneNote Classifier",
+            variable = self.noteSync
+            #need command
+        )
+        self.chkNote.pack(anchor = "w", pady=4)
+        
+        self.meetingSync = tk.BooleanVar(value=False)
+        self.chkMeeting = ttk.Checkbutton(
+            workflowFrame,
+            text="Outlook Meeting Alert",
+            variable=self.meetingSync
+            #need a command
+        )
+        self.chkMeeting.pack(anchor="w", pady=4)
+
+        ttk.Separator(self.root, orient="horizontal").pack(fill="x", padx=15, pady=5)
+
+        logFrame = ttk.Frame(self.root, padding = 15)
+        logFrame.pack(fill="both", expand=True)
+
+        ttk.Label(logFrame, text="Activity Log", font=("Segoe UI",10,"bold")).pack(anchor="w", pady=(0,5))
+
+        self.logBox = tk.Text(logFrame, height=6, font=("consolas",8), bg="#1e1e1e", fg="#d4d4d4", relief="flat")
+        self.logBox.pack(fill="both", expand=True)
+
+        #self.addLog("Engine Initialised")
+
     
     def run(self):
         self.root.mainloop()
