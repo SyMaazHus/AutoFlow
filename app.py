@@ -1,11 +1,11 @@
 import tkinter as tk
 from tkinter import ttk
 from datetime import datetime
-import threading, time
-
+import threading, time, sys
+from auth import get_access_token
 
 class GUI:
-    def __init__(self):
+    def __init__(self, accessToken: str):
         self.root = tk.Tk()
         self.root.title("AutoFlow")
         self.root.geometry("380x480")
@@ -13,6 +13,8 @@ class GUI:
 
         self.style = ttk.Style()
         self.style.theme_use("clam")
+
+        self.accessToken = accessToken
 
         #create header in root, fill it whole horizontally
         headerFrame = ttk.Frame(self.root, padding=15)
@@ -138,6 +140,16 @@ class GUI:
     def run(self):
         self.root.mainloop()
 
+def main():
+    try:
+        accessToken = get_access_token()
+        if not accessToken:
+            sys.exit(1)
+
+        app = GUI(accessToken=accessToken)
+        app.run()
+    except Exception as e:
+        sys.exit(1)
+
 if __name__ == "__main__":
-    app = GUI()
-    app.run()
+    main()
