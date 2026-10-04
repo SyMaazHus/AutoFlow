@@ -24,18 +24,18 @@ class GUI:
         #create button for the enging
         self.powerBtn = tk.Button(
             headerFrame,
-            text = "ENGINE PAUSED",
+            text = "Engine Paused",
             bg="#c62828",
             fg="white",
-            font=("Seoge UI", 10 , "bold"),
+            font=("Segoe UI", 10 , "bold"),
             relief="flat",
             pady=8,
-            #need to add command
+            command=self.toggle_engine
         )
         self.powerBtn.pack(fill="x", pady=(10, 5))
 
         #status label under button
-        self.lblStatus = ttk.Label(headerFrame, text="Status: Waiting for Graph API...", font=("Segeo UI", 9 ,"italic"))
+        self.lblStatus = ttk.Label(headerFrame, text="Status: Waiting for Graph API...", font=("Segoe UI", 9 ,"italic"))
         self.lblStatus.pack()
 
         #Separator Line
@@ -50,8 +50,8 @@ class GUI:
         self.chkFile = ttk.Checkbutton(
             workflowFrame,
             text="OneDrive Organiser",
-            variable=self.fileSync
-            #need command
+            variable=self.fileSync,
+            command=lambda: self.log_toggle("OneDrive Organiser", self.fileSync.get())
         )
         self.chkFile.pack(anchor="w", pady=4)
 
@@ -59,8 +59,8 @@ class GUI:
         self.chkNote = ttk.Checkbutton(
             workflowFrame,
             text = "OneNote Classifier",
-            variable = self.noteSync
-            #need command
+            variable = self.noteSync,
+            command=lambda: self.log_toggle("OneNote Classifier", self.noteSync.get())
         )
         self.chkNote.pack(anchor = "w", pady=4)
         
@@ -68,8 +68,8 @@ class GUI:
         self.chkMeeting = ttk.Checkbutton(
             workflowFrame,
             text="Outlook Meeting Alert",
-            variable=self.meetingSync
-            #need a command
+            variable=self.meetingSync,
+            command=lambda: self.log_toggle("Outlook Meeting Alert", self.meetingSync.get())
         )
         self.chkMeeting.pack(anchor="w", pady=4)
 
@@ -83,8 +83,27 @@ class GUI:
         self.logBox = tk.Text(logFrame, height=6, font=("consolas",8), bg="#1e1e1e", fg="#d4d4d4", relief="flat")
         self.logBox.pack(fill="both", expand=True)
 
-        #self.addLog("Engine Initialised")
+        self.addLog("Engine Initialised")
 
+    def toggle_engine(self):
+        self.engineActive = not self.engineActive
+        if self.engineActive:
+            self.powerBtn.config(text="Enginer Active", bg="#2e7d32")
+            self.lblStatus.config(text="Status: Polling Graph API...")
+            self.addLog("Engine Active")
+        else:
+            self.powerBtn.config(text="Engine Paused", bg="#c62828")
+            self.lblStatus.config(text="Status: Waiting")
+            self.addLog("Engine Paused")
+
+    def log_toggle(self, name, state):
+        status = "enabled" if state else "disabled"
+        self.addLog(f"Worfklow '{name}' {status}")
+
+    def addLog(self, text):
+        timestamp = datetime.now().strftime("%H:%M:%S")
+        self.logBox.insert(tk.END, f"> [{timestamp}] {text}\n")
+        self.logBox.see(tk.END)
     
     def run(self):
         self.root.mainloop()
