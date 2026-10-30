@@ -3,6 +3,9 @@ from tkinter import ttk
 from datetime import datetime
 import threading, time, sys
 from auth import get_access_token
+import queue
+import traceback
+from onedrive_graph import organise_root
 
 class GUI:
     def __init__(self, accessToken: str):
@@ -94,6 +97,11 @@ class GUI:
         #Window close protoocl
         self.root.protocol("WM_DELETE_WINDOW", self.onClose)
 
+        # Queue to store the messages in the background
+        self.events = queue.Queue()
+        self.isRunning = True
+        self.poll_events()
+        
         #start the background thread
         self.bgThread = threading.Thread(target=self.bgLoop, daemon=True)
         self.bgThread.start()
@@ -105,6 +113,7 @@ class GUI:
             self.powerBtn.config(text="Enginer Active", bg="#2e7d32")
             self.lblStatus.config(text="Status: Polling Graph API...")
             self.addLog("Engine Active")
+            threading.Thread(target=self.fetch_files, args=(self.fileSync.get(),), daemon=True).start()
         else:
             self.powerBtn.config(text="Engine Paused", bg="#c62828")
             self.lblStatus.config(text="Status: Waiting")
@@ -113,7 +122,7 @@ class GUI:
     def log_toggle(self, name, state):
         #Add toggle details in logs
         status = "enabled" if state else "disabled"
-        self.addLog(f"Worfklow '{name}' {status}")
+        self.addLog(f"Workflow '{name}' {status}")
 
     def addLog(self, text):
         #Add time stamp / task within logs
@@ -124,6 +133,21 @@ class GUI:
     def onClose(self):
         self.isRunning = False
         self.root.destroy()
+
+    
+    def poll_events(self):
+        # runs on the main thread, drains messages from workers
+        while not self.events.empty():
+            self.addLog(self.events.get())
+        self.root.after(200, self.poll_events)
+
+    def fetch_files(self, organise: bool):
+        # runs on a worker thread, never touches widgets
+        if not organise_root:
+            self.events.put("OneDrive Organiser is off, skipping")
+            return
+        for msg in organise_root(self.accessToken):
+            self.events.put(msg)
 
     def bgLoop(self):
         while self.isRunning:
@@ -149,6 +173,7 @@ def main():
         app = GUI(accessToken=accessToken)
         app.run()
     except Exception as e:
+        traceback.print_exc()
         sys.exit(1)
 
 if __name__ == "__main__":
